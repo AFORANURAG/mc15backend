@@ -24,15 +24,24 @@ app.get("/",(req,res)=>{
 })
 
 io.on('connection', async(socket) => {
-  
   socket.on("updatesocketid",async(email)=>{
-    console.log(`got an email ${email}`)
+    console.log(`connection successfull with socket of  ${email}`)
 try {
     await Usermodel.findOneAndUpdate({email},{socketId:socket.id})
 } catch (error) {
     console.log(`error while updating the socket id`,error)
 }
   })
+ 
+  socket.on("message",async(data)=>{
+    console.log(`here is the ${data[1]}`)
+  
+    let userto = await Usermodel.findOne({email:data[1]});
+    console.log(userto,socket.id,userto.socketId)   
+socket.broadcast.to(userto.socketId).emit("reply",data[0])
+
+  })
+
     socket.on('disconnect', () => {
       console.log('user disconnected');
     });
